@@ -4,6 +4,8 @@ from django.urls import reverse
 
 from .models import Article
 
+from rest_framework_simplejwt.tokens import AccessToken
+
 
 class ArticleTests(TestCase):
 
@@ -21,22 +23,49 @@ class ArticleTests(TestCase):
             author=self.user
         )
 
-    def test_article_list_view_for_logged_out_users(self):
+    def test_articles_list_view(self):
         self.client.logout()
+
         response = self.client.get(reverse('articles_list'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Harry Potter')
 
     def test_article_create_view_for_logged_in_users(self):
+        access_token = AccessToken.for_user(self.user)
+        headers = {'HTTP_AUTHORIZATION': f'Bearer {access_token}'}
+
         data = {
             'title': 'Django',
             'description': 'Article about django',
             'content': 'This is the hole text of the article',
             'author': self.user.id
         }
-        response = self.client.post(reverse('article_create'), data=data, content_type='application/json')
+        response = self.client.post(reverse('article_create'), data=data, **headers)
         self.assertEqual(response.status_code, 201)
-        response = self.client.get(reverse('articles_list'))
-        # FIXME: Should check particularly detail view of this article, not the list of them
+
+    def test_article_create_view_for_logged_out_users(self):
+        self.client.logout()
+
+        data = {
+            'title': 'Django',
+            'description': 'Article about django',
+            'content': 'This is the hole text of the article',
+            'author': self.user.id
+        }
+        response = self.client.post(reverse('article_create'), data=data)
+        self.assertEqual(response.status_code, 401)
+
+    def test_article_detail_view_for_logged_in_users(self):
+        access_token = AccessToken.for_user(self.user)
+        headers = {'HTTP_AUTHORIZATION': f'Bearer {access_token}'}
+
+        response = self.client.get(reverse('article_detail', args=[self.article.pk]), **headers)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'This is the hole text of the article')
+        self.assertContains(response, 'Harry Potter')
+        self.assertContains(response, 'Short story from Harry Potter')
+
+    def test_article_detail_view_for_logged_out_users(self):
+        self.client.logout()
+
+        response = self.client.get(reverse('article_detail', args=[self.article.pk]))
+        self.assertEqual(response.status_code, 401)
