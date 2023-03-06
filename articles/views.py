@@ -46,7 +46,7 @@ class ArticleUpdateAPIView(UpdateAPIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, pk, *args, **kwargs):
+    def put(self, request, pk, *args, **kwargs):
         """Allows only the author of the article change it"""
         article = get_object_or_404(Article, pk=pk)
         if article.author.pk != request.user.id:
@@ -77,6 +77,21 @@ class ArticleCreateAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ArticleDeleteAPIView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, pk, format=None):
+        article = get_object_or_404(Article, pk=pk)
+
+        if article.author.pk != request.user.id and request.user.is_staff is False:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        article.delete()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class DateTimeAPIView(APIView):

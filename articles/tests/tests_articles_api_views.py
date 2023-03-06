@@ -80,7 +80,11 @@ class ArticleTests(TestCase):
             'content': 'This is the hole content of the article (updated)',
             'author': self.user.id
         }
-        response = self.client.post(reverse('article_update', args=[self.article.pk]), data=data, **headers)
+        response = self.client.put(
+            reverse('article_update', args=[self.article.pk]),
+            data=data, **headers,
+            content_type='application/json'
+        )
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'updated')
         self.assertEqual(response.data['author'], self.user.id)
@@ -100,12 +104,59 @@ class ArticleTests(TestCase):
             'content': 'This is the hole content of the article (updated by new user)',
             'author': self.user.id
         }
-        response = self.client.post(reverse('article_update', args=[self.article.pk]), data=data, **headers)
+        response = self.client.put(
+            reverse('article_update', args=[self.article.pk]),
+            data=data,
+            **headers,
+            content_type='application/json'
+        )
         self.assertEqual(response.status_code, 403)
 
     def test_article_update_view_for_logged_out_users(self):
         self.client.logout()
 
-        response = self.client.post(reverse('article_update', args=[self.article.pk]))
+        response = self.client.put(reverse('article_update', args=[self.article.pk]))
+
+        self.assertEqual(response.status_code, 401)
+
+    def test_article_delete_view_for_logged_in_users(self):
+        access_token = AccessToken.for_user(self.user)
+        headers = {'HTTP_AUTHORIZATION': f'Bearer {access_token}'}
+
+        response = self.client.delete(reverse('article_delete', args=[self.article.pk]), **headers)
+
+        self.assertEqual(response.status_code, 204)
+
+    def test_article_delete_view_for_logged_in_wrong_users(self):
+        new_user = get_user_model().objects.create_user(
+            name='testuser1',
+            email='testuser1@email.com',
+            password='testpass123'
+        )
+        access_token = AccessToken.for_user(new_user)
+        headers = {'HTTP_AUTHORIZATION': f'Bearer {access_token}'}
+
+        response = self.client.delete(reverse('article_delete', args=[self.article.pk]), **headers)
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_article_delete_view_for_admin(self):
+        new_user = get_user_model().objects.create_user(
+            name='testuser1',
+            email='testuser1@email.com',
+            password='testpass123',
+            is_staff='True'
+        )
+        access_token = AccessToken.for_user(new_user)
+        headers = {'HTTP_AUTHORIZATION': f'Bearer {access_token}'}
+
+        response = self.client.delete(reverse('article_delete', args=[self.article.pk]), **headers)
+
+        self.assertEqual(response.status_code, 204)
+
+    def test_article_delete_view_for_logged_out_users(self):
+        self.client.logout()
+
+        response = self.client.delete(reverse('article_delete', args=[self.article.pk]))
 
         self.assertEqual(response.status_code, 401)
