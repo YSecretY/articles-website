@@ -2,9 +2,10 @@ from rest_framework import serializers
 
 from .models import User
 
+from django.contrib.auth.hashers import make_password
+
 
 class UserSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = User
         fields = ['id', 'email', 'name', 'password']
@@ -15,4 +16,4 @@ class UserSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
-
+    #  FIXME: User has a wrong password if it is created in admin, but it works well with RegisterAPIView
