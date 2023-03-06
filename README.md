@@ -1,9 +1,9 @@
-# :green_book: Basic Django project - Articles Website  :pencil2:
+# :clipboard: Basic Django project - Articles Website  :pencil2:
 
 ## :rocket: Possibilities
 
-- CRUD(Create, Read, Update, Delete) articles
-- Create and authenticate users with JWT auth
+- CRUD(Create, Read, Update, Delete) articles :page_with_curl:
+- Create and authenticate users with JWT auth :raising_hand:
 
 ## :running: To run locally
 
@@ -13,7 +13,7 @@
 - Input in terminal docker-compose up -d --build
 - You can work with urls using 127.0.0.1:8000 in browser, or in postman
 
-## Technologies used
+## Technologies used :computer:
 
 <a href='https://www.djangoproject.com'>![alt text](https://img.shields.io/badge/Django-092E20?style=for-the-badge&logo=Django)</a>
 <a href='https://www.docker.com'>![alt text](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=Docker)</a>
