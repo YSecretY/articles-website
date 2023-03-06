@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 
-from .models import Article
+from articles.models import Article
 
 from rest_framework_simplejwt.tokens import AccessToken
 
